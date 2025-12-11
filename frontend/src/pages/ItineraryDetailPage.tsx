@@ -2,8 +2,12 @@ import { useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { Button } from '../components/Button';
 import { Card } from '../components/Card';
+import { Modal } from '../components/Modal';
+import { Input } from '../components/Input';
+import { BackButton } from '../components/BackButton';
 import { LoginModal } from '../components/LoginModal';
 import { useAuth } from '../contexts/AuthContext';
+import { useToast } from '../contexts/ToastContext';
 import { itineraryService } from '../services/itineraryService';
 import { ItineraryRecommendation } from '../services/onboardingService';
 import {
@@ -15,6 +19,7 @@ import {
   ArrowRight,
   Edit,
   Play,
+  Star,
 } from 'lucide-react';
 
 const TRANSPORTATION_ICONS: Record<string, string> = {
@@ -29,8 +34,10 @@ export default function ItineraryDetailPage() {
   const location = useLocation();
   const navigate = useNavigate();
   const { isAuthenticated } = useAuth();
+  const { showToast } = useToast();
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [showScheduleModal, setShowScheduleModal] = useState(false);
 
   const itinerary = location.state?.itinerary as ItineraryRecommendation;
 
@@ -48,22 +55,52 @@ export default function ItineraryDetailPage() {
     setIsSaving(true);
     try {
       // Save itinerary to database
+      // Map items to the correct format
+      const itemsToSave = itinerary.items.map((item, index) => ({
+        locationId: item.locationId,
+        orderIndex: item.orderIndex ?? index,
+        scheduledStartTime: item.scheduledStartTime || '09:00',
+        scheduledEndTime: item.scheduledEndTime || '11:00',
+        durationMinutes: item.durationMinutes || 120,
+        transportationMethod: item.transportationMethod || 'walking',
+      }));
+
       const { itinerary: savedItinerary } = await itineraryService.createItinerary({
         title: itinerary.title,
-        items: itinerary.items,
+        items: itemsToSave,
       });
 
       if (action === 'customize') {
+        showToast('Itinerary saved! Opening planner...', 'success');
         navigate(`/plan/${savedItinerary.id}`);
       } else if (action === 'schedule') {
-        navigate(`/plan/${savedItinerary.id}`, { state: { openSchedule: true } });
+        setShowScheduleModal(true);
+        // Store itinerary ID for scheduling
+        (window as any).scheduleItineraryId = savedItinerary.id;
       } else if (action === 'go-now') {
+        showToast('Starting your trip!', 'success');
         navigate(`/trip/${savedItinerary.id}`);
       }
     } catch (error) {
       console.error('Error saving itinerary:', error);
+      showToast('Error saving itinerary', 'error');
     } finally {
       setIsSaving(false);
+    }
+  };
+
+  const handleScheduleSubmit = async (startDate: string, endDate: string) => {
+    const itineraryId = (window as any).scheduleItineraryId;
+    if (!itineraryId) return;
+
+    try {
+      await itineraryService.scheduleItinerary(itineraryId, startDate, endDate);
+      setShowScheduleModal(false);
+      showToast('Trip scheduled successfully!', 'success');
+      navigate(`/plan/${itineraryId}`);
+    } catch (error) {
+      console.error('Error scheduling:', error);
+      showToast('Error scheduling trip', 'error');
     }
   };
 
@@ -72,12 +109,7 @@ export default function ItineraryDetailPage() {
       <div className="max-w-6xl mx-auto px-4 py-8">
         {/* Header */}
         <div className="mb-8">
-          <button
-            onClick={() => navigate(-1)}
-            className="text-gray-600 hover:text-black mb-4"
-          >
-            ← Back to itineraries
-          </button>
+          <BackButton to="/itineraries" label="Back to itineraries" />
           <h1 className="text-4xl font-bold mb-2">{itinerary.title}</h1>
           <p className="text-xl text-gray-600 mb-4">{itinerary.description}</p>
           
@@ -226,6 +258,45 @@ export default function ItineraryDetailPage() {
         isOpen={isLoginModalOpen}
         onClose={() => setIsLoginModalOpen(false)}
       />
+
+      {/* Schedule Modal */}
+      <Modal isOpen={showScheduleModal} onClose={() => setShowScheduleModal(false)} title="Schedule Your Trip">
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            const formData = new FormData(e.currentTarget);
+            const startDate = formData.get('startDate') as string;
+            const endDate = formData.get('endDate') as string;
+            if (startDate && endDate) {
+              handleScheduleSubmit(startDate, endDate);
+            }
+          }}
+          className="space-y-4"
+        >
+          <Input
+            label="Start Date"
+            type="date"
+            name="startDate"
+            required
+            min={new Date().toISOString().split('T')[0]}
+          />
+          <Input
+            label="End Date"
+            type="date"
+            name="endDate"
+            required
+            min={new Date().toISOString().split('T')[0]}
+          />
+          <div className="flex gap-3">
+            <Button variant="secondary" onClick={() => setShowScheduleModal(false)} className="flex-1" type="button">
+              Cancel
+            </Button>
+            <Button className="flex-1" type="submit">
+              Schedule Trip
+            </Button>
+          </div>
+        </form>
+      </Modal>
     </div>
   );
 }

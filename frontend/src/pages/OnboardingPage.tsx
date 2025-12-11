@@ -6,6 +6,8 @@ import { Input } from '../components/Input';
 import { PersonaCard } from '../components/PersonaCard';
 import { EmojiSelector } from '../components/EmojiSelector';
 import { SwipeCard } from '../components/SwipeCard';
+import { ProgressBar } from '../components/ProgressBar';
+import { useToast } from '../contexts/ToastContext';
 import { onboardingService, UserPreferences, WeatherData } from '../services/onboardingService';
 import { Cloud, Droplets, Wind, Loader2 } from 'lucide-react';
 
@@ -43,6 +45,7 @@ const SWIPE_LOCATIONS = [
 
 export default function OnboardingPage() {
   const navigate = useNavigate();
+  const { showToast } = useToast();
   const [step, setStep] = useState(0);
   const [preferences, setPreferences] = useState<UserPreferences>({});
   const [selectedPersonas, setSelectedPersonas] = useState<string[]>([]);
@@ -94,9 +97,11 @@ export default function OnboardingPage() {
       await onboardingService.savePreferences(finalPreferences);
       // Store in localStorage for guest users
       localStorage.setItem('userPreferences', JSON.stringify(finalPreferences));
+      showToast('Generating your perfect itinerary...', 'info');
       navigate('/itineraries', { state: { preferences: finalPreferences } });
     } catch (error) {
       console.error('Error generating itineraries:', error);
+      showToast('Error generating itineraries', 'error');
     } finally {
       setIsLoading(false);
     }

@@ -10,8 +10,11 @@ export const Card = forwardRef<HTMLDivElement, CardProps>(
     { className = '', hoverable = false, static: isStatic = false, children, ...props },
     ref
   ) => {
-    const baseStyles =
-      'bg-white rounded-xl border-2 border-black p-5 shadow-[6px_6px_0px_#000]';
+    // Check if padding should be removed (if className contains p-0 or !p-0)
+    const hasNoPadding = className.includes('p-0') || className.includes('!p-0');
+    const baseStyles = hasNoPadding
+      ? 'bg-white rounded-xl border-2 border-black shadow-[6px_6px_0px_#000]'
+      : 'bg-white rounded-xl border-2 border-black p-5 shadow-[6px_6px_0px_#000]';
     
     // Only apply hover effect if explicitly enabled AND not static
     const hoverStyles = hoverable && !isStatic

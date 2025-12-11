@@ -87,6 +87,42 @@ export const itineraryService = {
   async deleteItem(id: string, itemId: string): Promise<void> {
     await api.delete(`/itineraries/${id}/items/${itemId}`);
   },
+
+  async optimizeItinerary(id: string, optimizationType: string): Promise<{
+    optimizedItinerary: { items: ItineraryItem[] };
+    changes: Array<{ itemId: string; oldIndex: number; newIndex: number; location: Location }>;
+  }> {
+    const response = await api.post<{
+      optimizedItinerary: { items: ItineraryItem[] };
+      changes: Array<{ itemId: string; oldIndex: number; newIndex: number; location: Location }>;
+    }>(`/itineraries/${id}/optimize`, { optimizationType });
+    return response.data;
+  },
+
+  async localizeItinerary(id: string): Promise<{
+    alternatives: Array<{
+      itemId: string;
+      currentLocation: Location;
+      alternativeLocation: Location;
+    }>;
+  }> {
+    const response = await api.post<{
+      alternatives: Array<{
+        itemId: string;
+        currentLocation: Location;
+        alternativeLocation: Location;
+      }>;
+    }>(`/itineraries/${id}/localize`);
+    return response.data;
+  },
+
+  async scheduleItinerary(id: string, startDate: string, endDate: string): Promise<{ itinerary: Itinerary }> {
+    const response = await api.post<{ itinerary: Itinerary }>(`/itineraries/${id}/schedule`, {
+      startDate,
+      endDate,
+    });
+    return response.data;
+  },
 };
 
 export const locationService = {

@@ -2,12 +2,15 @@ import { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { Button } from '../components/Button';
 import { Card } from '../components/Card';
+import { SkeletonCard } from '../components/Skeleton';
+import { useToast } from '../contexts/ToastContext';
 import { onboardingService, ItineraryRecommendation, UserPreferences } from '../services/onboardingService';
 import { MapPin, Clock, DollarSign, Loader2, RefreshCw } from 'lucide-react';
 
 export default function ItinerariesPage() {
   const location = useLocation();
   const navigate = useNavigate();
+  const { showToast } = useToast();
   const [itineraries, setItineraries] = useState<ItineraryRecommendation[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isRerolling, setIsRerolling] = useState(false);
@@ -23,8 +26,12 @@ export default function ItinerariesPage() {
     try {
       const data = await onboardingService.getItineraries(preferences);
       setItineraries(data.itineraries);
+      if (data.itineraries.length === 0) {
+        showToast('No itineraries found. Try adjusting your preferences.', 'info');
+      }
     } catch (error) {
       console.error('Error loading itineraries:', error);
+      showToast('Error loading itineraries', 'error');
     } finally {
       setIsLoading(false);
     }
@@ -35,8 +42,10 @@ export default function ItinerariesPage() {
     try {
       const data = await onboardingService.rerollItineraries(preferences);
       setItineraries(data.itineraries);
+      showToast('New itineraries generated!', 'success');
     } catch (error) {
       console.error('Error rerolling itineraries:', error);
+      showToast('Error generating new itineraries', 'error');
     } finally {
       setIsRerolling(false);
     }
@@ -48,14 +57,18 @@ export default function ItinerariesPage() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-[#4FC3F7]/10 via-[#FAFAF8] to-[#81D4FA]/10 flex items-center justify-center">
-        <Card static className="text-center p-12">
-          <Loader2 className="w-16 h-16 animate-spin text-[#4FC3F7] mx-auto mb-4" />
-          <h2 className="text-2xl font-bold mb-2">Creating Your Perfect Itinerary...</h2>
-          <p className="text-gray-600">
-            We're analyzing weather, traffic, and your preferences
-          </p>
-        </Card>
+      <div className="min-h-screen bg-gradient-to-br from-[#4FC3F7]/10 via-[#FAFAF8] to-[#81D4FA]/10">
+        <div className="max-w-7xl mx-auto px-4 py-12">
+          <div className="text-center mb-8">
+            <h1 className="text-5xl font-bold mb-2">Your Personalized Itineraries</h1>
+            <p className="text-xl text-gray-600">Choose your adventure in Danang</p>
+          </div>
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {[1, 2, 3].map((i) => (
+              <SkeletonCard key={i} />
+            ))}
+          </div>
+        </div>
       </div>
     );
   }

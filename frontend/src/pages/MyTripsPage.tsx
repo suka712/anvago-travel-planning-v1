@@ -2,6 +2,8 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '../components/Button';
 import { Card } from '../components/Card';
+import { SkeletonCard } from '../components/Skeleton';
+import { useToast } from '../contexts/ToastContext';
 import { itineraryService, Itinerary } from '../services/itineraryService';
 import {
   MapPin,
@@ -15,6 +17,7 @@ import {
 
 export default function MyTripsPage() {
   const navigate = useNavigate();
+  const { showToast } = useToast();
   const [itineraries, setItineraries] = useState<Itinerary[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [filter, setFilter] = useState<string>('all');
@@ -31,6 +34,7 @@ export default function MyTripsPage() {
       setItineraries(data.itineraries);
     } catch (error) {
       console.error('Error loading itineraries:', error);
+      showToast('Error loading trips', 'error');
     } finally {
       setIsLoading(false);
     }
@@ -42,8 +46,10 @@ export default function MyTripsPage() {
     try {
       await itineraryService.deleteItinerary(id);
       setItineraries(itineraries.filter((it) => it.id !== id));
+      showToast('Trip deleted', 'success');
     } catch (error) {
       console.error('Error deleting itinerary:', error);
+      showToast('Error deleting trip', 'error');
     }
   };
 
@@ -96,8 +102,10 @@ export default function MyTripsPage() {
 
         {/* Trips Grid */}
         {isLoading ? (
-          <div className="flex justify-center py-20">
-            <Loader2 className="w-12 h-12 animate-spin text-[#4FC3F7]" />
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {[1, 2, 3, 4, 5, 6].map((i) => (
+              <SkeletonCard key={i} />
+            ))}
           </div>
         ) : itineraries.length === 0 ? (
           <Card static className="text-center py-20">
@@ -114,78 +122,108 @@ export default function MyTripsPage() {
           </Card>
         ) : (
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {itineraries.map((itinerary) => (
-              <Card key={itinerary.id} hoverable>
-                {/* Image Grid */}
-                <div className="grid grid-cols-2 gap-2 mb-4 h-40">
-                  {itinerary.items.slice(0, 4).map((item, i) => (
-                    <img
-                      key={i}
-                      src={item.location.imageUrl}
-                      alt={item.location.name}
-                      className="w-full h-full object-cover rounded-lg border-2 border-black"
-                    />
-                  ))}
-                </div>
-
-                {/* Content */}
-                <div className="mb-4">
-                  <div className="flex items-start justify-between mb-2">
-                    <h3 className="text-xl font-bold flex-1">{itinerary.title || 'Untitled Trip'}</h3>
-                    <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium border-2 border-black ${getStatusColor(itinerary.status)}`}>
-                      {itinerary.status}
-                    </span>
-                  </div>
-
-                  {itinerary.description && (
-                    <p className="text-sm text-gray-600 mb-3 line-clamp-2">
-                      {itinerary.description}
-                    </p>
-                  )}
-
-                  <div className="flex items-center gap-4 text-sm text-gray-600">
-                    <div className="flex items-center gap-1">
-                      <MapPin className="w-4 h-4" />
-                      <span>{itinerary.items.length} stops</span>
-                    </div>
-                    {itinerary.startDate && (
-                      <div className="flex items-center gap-1">
-                        <Calendar className="w-4 h-4" />
-                        <span>{new Date(itinerary.startDate).toLocaleDateString()}</span>
+            {itineraries.map((itinerary) => {
+              const items = itinerary.items || [];
+              const imageItems = items.filter(item => item.location?.imageUrl).slice(0, 4);
+              
+              return (
+                <Card key={itinerary.id} hoverable className="flex flex-col h-full min-h-[400px] !p-0">
+                  {/* Image Grid */}
+                  <div className="p-5 pb-0 flex-shrink-0" style={{ height: '180px' }}>
+                    {imageItems.length > 0 ? (
+                      <div className={`grid gap-2 h-40 ${
+                        imageItems.length === 1 ? 'grid-cols-1' : 'grid-cols-2'
+                      }`}>
+                        {imageItems.map((item, i) => (
+                          <img
+                            key={i}
+                            src={item.location.imageUrl}
+                            alt={item.location.name}
+                            className="w-full h-full object-cover rounded-lg border-2 border-black"
+                            onError={(e) => {
+                              (e.target as HTMLImageElement).src = 'https://via.placeholder.com/300x200?text=No+Image';
+                            }}
+                          />
+                        ))}
+                        {/* Fill empty slots if less than 4 images */}
+                        {imageItems.length < 4 && imageItems.length > 1 && (
+                          Array.from({ length: 4 - imageItems.length }).map((_, i) => (
+                            <div
+                              key={`empty-${i}`}
+                              className="w-full h-full bg-gray-100 rounded-lg border-2 border-black flex items-center justify-center"
+                            >
+                              <MapPin className="w-8 h-8 text-gray-400" />
+                            </div>
+                          ))
+                        )}
+                      </div>
+                    ) : (
+                      <div className="h-40 bg-gradient-to-br from-[#4FC3F7]/20 to-[#81D4FA]/20 rounded-lg border-2 border-black flex items-center justify-center">
+                        <MapPin className="w-12 h-12 text-gray-400" />
                       </div>
                     )}
                   </div>
-                </div>
 
-                {/* Actions */}
-                <div className="flex gap-2">
-                  {itinerary.status === 'scheduled' || itinerary.status === 'in_progress' ? (
+                  {/* Content - starts after image section */}
+                  <div className="px-5 pt-4 pb-4 flex-1 flex flex-col min-h-0">
+                    <div className="flex items-start justify-between mb-2 gap-2 flex-shrink-0">
+                      <h3 className="text-xl font-bold flex-1 line-clamp-2 break-words">{itinerary.title || 'Untitled Trip'}</h3>
+                      <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium border-2 border-black whitespace-nowrap flex-shrink-0 ${getStatusColor(itinerary.status)}`}>
+                        {itinerary.status.replace('_', ' ')}
+                      </span>
+                    </div>
+
+                    {itinerary.description && (
+                      <p className="text-sm text-gray-600 mb-3 line-clamp-2 flex-shrink-0">
+                        {itinerary.description}
+                      </p>
+                    )}
+
+                    <div className="flex items-center gap-4 text-sm text-gray-600 flex-wrap flex-shrink-0">
+                      <div className="flex items-center gap-1">
+                        <MapPin className="w-4 h-4 flex-shrink-0" />
+                        <span>{items.length} {items.length === 1 ? 'stop' : 'stops'}</span>
+                      </div>
+                      {itinerary.startDate && (
+                        <div className="flex items-center gap-1">
+                          <Calendar className="w-4 h-4 flex-shrink-0" />
+                          <span>{new Date(itinerary.startDate).toLocaleDateString()}</span>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Actions */}
+                  <div className="px-5 pb-5 flex gap-2 mt-auto flex-shrink-0">
+                    {itinerary.status === 'scheduled' || itinerary.status === 'in_progress' ? (
+                      <Button
+                        onClick={() => navigate(`/trip/${itinerary.id}`)}
+                        className="flex-1"
+                      >
+                        <Play className="w-4 h-4 mr-2" />
+                        {itinerary.status === 'in_progress' ? 'Continue' : 'Start'}
+                      </Button>
+                    ) : (
+                      <Button
+                        onClick={() => navigate(`/plan/${itinerary.id}`)}
+                        variant="secondary"
+                        className="flex-1"
+                      >
+                        <Edit className="w-4 h-4 mr-2" />
+                        Edit
+                      </Button>
+                    )}
                     <Button
-                      onClick={() => navigate(`/trip/${itinerary.id}`)}
-                      className="flex-1"
+                      variant="danger"
+                      onClick={() => handleDelete(itinerary.id)}
+                      size="small"
                     >
-                      <Play className="w-4 h-4 mr-2" />
-                      {itinerary.status === 'in_progress' ? 'Continue' : 'Start'}
+                      <Trash2 className="w-4 h-4" />
                     </Button>
-                  ) : (
-                    <Button
-                      onClick={() => navigate(`/plan/${itinerary.id}`)}
-                      variant="secondary"
-                      className="flex-1"
-                    >
-                      <Edit className="w-4 h-4 mr-2" />
-                      Edit
-                    </Button>
-                  )}
-                  <Button
-                    variant="danger"
-                    onClick={() => handleDelete(itinerary.id)}
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </Button>
-                </div>
-              </Card>
-            ))}
+                  </div>
+                </Card>
+              );
+            })}
           </div>
         )}
       </div>

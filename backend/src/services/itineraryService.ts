@@ -162,25 +162,61 @@ function selectLocationsForItinerary(
   duration: number,
   variation: number
 ): any[] {
-  // Shuffle and select locations
-  const shuffled = [...locations].sort(() => Math.random() - 0.5);
-  const locationsPerDay = Math.min(4, Math.max(2, Math.floor(shuffled.length / duration)));
-  const selected = shuffled.slice(
-    variation * locationsPerDay,
-    (variation + 1) * locationsPerDay * duration
-  );
+  if (locations.length === 0) return [];
 
-  // Ensure we have a good mix
-  const categories = new Set(selected.map((l) => l.category));
-  if (categories.size < 2 && shuffled.length > selected.length) {
-    // Add more variety
-    const additional = shuffled
-      .filter((l) => !selected.includes(l) && !categories.has(l.category))
-      .slice(0, 2);
-    selected.push(...additional);
+  // Sort by rating (highest first) for better quality
+  const sortedByRating = [...locations].sort((a, b) => {
+    const ratingA = a.rating?.toNumber() || 0;
+    const ratingB = b.rating?.toNumber() || 0;
+    return ratingB - ratingA;
+  });
+
+  // Calculate locations per day (2-4 per day)
+  const locationsPerDay = Math.min(4, Math.max(2, Math.ceil(sortedByRating.length / duration)));
+  const totalNeeded = locationsPerDay * duration;
+
+  // Create variation by starting from different points
+  const startIndex = (variation * locationsPerDay) % sortedByRating.length;
+  
+  // Select locations with variety
+  const selected: any[] = [];
+  const usedCategories = new Set<string>();
+  const usedLocations = new Set<string>();
+
+  // First pass: select top-rated locations ensuring category variety
+  for (let i = 0; i < sortedByRating.length && selected.length < totalNeeded; i++) {
+    const loc = sortedByRating[(startIndex + i) % sortedByRating.length];
+    const category = loc.category || 'attraction';
+    
+    // Prefer locations with different categories
+    if (!usedCategories.has(category) || selected.length < totalNeeded * 0.7) {
+      if (!usedLocations.has(loc.id)) {
+        selected.push(loc);
+        usedCategories.add(category);
+        usedLocations.add(loc.id);
+      }
+    }
   }
 
-  return selected.slice(0, locationsPerDay * duration);
+  // Second pass: fill remaining slots if needed
+  if (selected.length < totalNeeded) {
+    for (const loc of sortedByRating) {
+      if (selected.length >= totalNeeded) break;
+      if (!usedLocations.has(loc.id)) {
+        selected.push(loc);
+        usedLocations.add(loc.id);
+      }
+    }
+  }
+
+  // Shuffle slightly to create variation between itineraries
+  const shuffled = [...selected];
+  for (let i = shuffled.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+  }
+
+  return shuffled.slice(0, totalNeeded);
 }
 
 function getLocationDuration(location: any): number {
@@ -203,10 +239,31 @@ function getTransportationMethod(
   to: any,
   preferred?: string[]
 ): string {
-  // Simple distance estimation (in real app, use actual coordinates)
+  // Simple distance estimation using coordinates if available
   const methods = preferred || ['walking', 'grab_bike', 'grab_car'];
   
-  // For demo, randomly select from preferred or default
+  if (from.latitude && from.longitude && to.latitude && to.longitude) {
+    // Calculate rough distance (Haversine simplified)
+    const lat1 = parseFloat(from.latitude.toString());
+    const lon1 = parseFloat(from.longitude.toString());
+    const lat2 = parseFloat(to.latitude.toString());
+    const lon2 = parseFloat(to.longitude.toString());
+    
+    const distance = Math.sqrt(
+      Math.pow(lat2 - lat1, 2) + Math.pow(lon2 - lon1, 2)
+    ) * 111; // Rough km conversion
+    
+    // Choose method based on distance
+    if (distance < 1 && methods.includes('walking')) {
+      return 'walking';
+    } else if (distance < 5 && methods.includes('grab_bike')) {
+      return 'grab_bike';
+    } else if (methods.includes('grab_car')) {
+      return 'grab_car';
+    }
+  }
+  
+  // Fallback: use preferred or default
   if (methods.includes('walking')) return 'walking';
   if (methods.includes('grab_bike')) return 'grab_bike';
   return 'grab_car';

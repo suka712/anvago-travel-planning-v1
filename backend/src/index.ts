@@ -22,13 +22,13 @@ import authRoutes from './routes/authRoutes';
 import onboardingRoutes from './routes/onboardingRoutes';
 import itineraryRoutes from './routes/itineraryRoutes';
 import locationRoutes from './routes/locationRoutes';
+import tripRoutes from './routes/tripRoutes';
 
 app.use('/api/auth', authRoutes);
 app.use('/api/onboarding', onboardingRoutes);
 app.use('/api/itineraries', itineraryRoutes);
 app.use('/api/locations', locationRoutes);
-// app.use('/api/trips', tripRoutes);
-// app.use('/api/weather', weatherRoutes);
+app.use('/api/trips', tripRoutes);
 
 // Error handling middleware
 app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
