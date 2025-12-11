@@ -1,0 +1,184 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id                String   @id @default(uuid())
+  email             String   @unique
+  passwordHash      String?  @map("password_hash")
+  name              String?
+  avatarUrl         String?  @map("avatar_url")
+  oauthProvider     String?  @map("oauth_provider")
+  oauthProviderId   String?  @map("oauth_provider_id")
+  subscriptionTier  String   @default("free") @map("subscription_tier")
+  createdAt         DateTime @default(now()) @map("created_at")
+  updatedAt         DateTime @updatedAt @map("updated_at")
+
+  preferences       UserPreferences?
+  itineraries       Itinerary[]
+  transportationBookings TransportationBooking[]
+  activityBookings  ActivityBooking[]
+  tripTracking      TripTracking[]
+
+  @@map("users")
+}
+
+model UserPreferences {
+  id                    String   @id @default(uuid())
+  userId                String   @unique @map("user_id")
+  destination           String?
+  tripDuration          Int?     @map("trip_duration")
+  personas              String[]
+  likedLocations        String[] @map("liked_locations")
+  interests             String[]
+  budgetRange           String?  @map("budget_range")
+  travelStyle           String?  @map("travel_style")
+  preferredTransportation String[] @map("preferred_transportation")
+  createdAt             DateTime @default(now()) @map("created_at")
+  updatedAt             DateTime @updatedAt @map("updated_at")
+
+  user                  User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("user_preferences")
+}
+
+model Location {
+  id                String   @id @default(uuid())
+  name              String
+  description       String?  @db.Text
+  address           String?  @db.Text
+  latitude          Decimal? @db.Decimal(10, 8)
+  longitude         Decimal? @db.Decimal(11, 8)
+  category          String?
+  subcategory       String?
+  imageUrl          String?  @map("image_url")
+  rating            Decimal? @db.Decimal(3, 2)
+  priceRange        String?  @map("price_range")
+  openingHours      Json?    @map("opening_hours")
+  isAnvaAuthentic   Boolean  @default(false) @map("is_anva_authentic")
+  localRating       Decimal? @db.Decimal(3, 2) @map("local_rating")
+  indoor            Boolean  @default(false)
+  outdoor           Boolean  @default(false)
+  weatherDependent  Boolean  @default(false) @map("weather_dependent")
+  createdAt         DateTime @default(now()) @map("created_at")
+  updatedAt         DateTime @updatedAt @map("updated_at")
+
+  itineraryItems    ItineraryItem[]
+
+  @@map("locations")
+}
+
+model Itinerary {
+  id            String   @id @default(uuid())
+  userId        String?  @map("user_id")
+  title         String?
+  description   String?  @db.Text
+  startDate     DateTime? @map("start_date")
+  endDate       DateTime? @map("end_date")
+  durationDays  Int?     @map("duration_days")
+  status        String   @default("draft")
+  isTemplate    Boolean  @default(false) @map("is_template")
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+
+  user          User?    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  items         ItineraryItem[]
+  tripTracking  TripTracking?
+
+  @@map("itineraries")
+}
+
+model ItineraryItem {
+  id                  String   @id @default(uuid())
+  itineraryId         String   @map("itinerary_id")
+  locationId          String   @map("location_id")
+  orderIndex          Int      @map("order_index")
+  scheduledStartTime  String?  @map("scheduled_start_time")
+  scheduledEndTime    String?  @map("scheduled_end_time")
+  actualStartTime     DateTime? @map("actual_start_time")
+  actualEndTime       DateTime? @map("actual_end_time")
+  durationMinutes     Int?     @map("duration_minutes")
+  transportationMethod String? @map("transportation_method")
+  notes               String?  @db.Text
+  isCompleted         Boolean  @default(false) @map("is_completed")
+  createdAt           DateTime @default(now()) @map("created_at")
+  updatedAt           DateTime @updatedAt @map("updated_at")
+
+  itinerary           Itinerary @relation(fields: [itineraryId], references: [id], onDelete: Cascade)
+  location            Location  @relation(fields: [locationId], references: [id])
+  transportationBookings TransportationBooking[]
+  activityBookings    ActivityBooking[]
+
+  @@map("itinerary_items")
+}
+
+model TransportationBooking {
+  id                String   @id @default(uuid())
+  itineraryItemId   String   @map("itinerary_item_id")
+  userId            String   @map("user_id")
+  provider          String
+  bookingReference  String?  @map("booking_reference")
+  status            String   @default("pending")
+  estimatedCost     Decimal? @db.Decimal(10, 2) @map("estimated_cost")
+  createdAt         DateTime @default(now()) @map("created_at")
+  updatedAt         DateTime @updatedAt @map("updated_at")
+
+  itineraryItem     ItineraryItem @relation(fields: [itineraryItemId], references: [id], onDelete: Cascade)
+  user              User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("transportation_bookings")
+}
+
+model ActivityBooking {
+  id                String   @id @default(uuid())
+  itineraryItemId   String   @map("itinerary_item_id")
+  userId            String   @map("user_id")
+  provider          String
+  bookingReference  String?  @map("booking_reference")
+  status            String   @default("pending")
+  bookingUrl        String?  @db.Text @map("booking_url")
+  createdAt         DateTime @default(now()) @map("created_at")
+  updatedAt         DateTime @updatedAt @map("updated_at")
+
+  itineraryItem     ItineraryItem @relation(fields: [itineraryItemId], references: [id], onDelete: Cascade)
+  user              User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("activity_bookings")
+}
+
+model TripTracking {
+  id                String   @id @default(uuid())
+  itineraryId       String   @unique @map("itinerary_id")
+  userId            String   @map("user_id")
+  currentLocationId String?  @map("current_location_id")
+  latitude          Decimal? @db.Decimal(10, 8)
+  longitude         Decimal? @db.Decimal(11, 8)
+  status            String   @default("not_started")
+  lastUpdated       DateTime @default(now()) @map("last_updated")
+  createdAt         DateTime @default(now()) @map("created_at")
+
+  itinerary         Itinerary @relation(fields: [itineraryId], references: [id], onDelete: Cascade)
+  user              User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("trip_tracking")
+}
+
+model WeatherCache {
+  id          String   @id @default(uuid())
+  location    String
+  date        DateTime @db.Date
+  weatherData Json     @map("weather_data")
+  cachedAt    DateTime @default(now()) @map("cached_at")
+  expiresAt  DateTime @map("expires_at")
+
+  @@unique([location, date])
+  @@map("weather_cache")
+}
