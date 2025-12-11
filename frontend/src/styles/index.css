@@ -1,13 +1,12 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
 
 @layer base {
   * {
-    @apply border-border;
+    border-color: inherit;
   }
   body {
-    @apply bg-background text-text-primary font-sans;
+    background-color: #FAFAF8;
+    color: #1A1A1A;
     font-family: 'DM Sans', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   }
 }
