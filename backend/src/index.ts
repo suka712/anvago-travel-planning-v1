@@ -19,10 +19,14 @@ app.get('/api/health', (req, res) => {
 
 // Routes
 import authRoutes from './routes/authRoutes';
+import onboardingRoutes from './routes/onboardingRoutes';
+import itineraryRoutes from './routes/itineraryRoutes';
+import locationRoutes from './routes/locationRoutes';
+
 app.use('/api/auth', authRoutes);
-// app.use('/api/onboarding', onboardingRoutes);
-// app.use('/api/itineraries', itineraryRoutes);
-// app.use('/api/locations', locationRoutes);
+app.use('/api/onboarding', onboardingRoutes);
+app.use('/api/itineraries', itineraryRoutes);
+app.use('/api/locations', locationRoutes);
 // app.use('/api/trips', tripRoutes);
 // app.use('/api/weather', weatherRoutes);
 
