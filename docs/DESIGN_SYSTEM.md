@@ -259,14 +259,41 @@ inline-flex items-center justify-center font-medium rounded-lg border-2 border-b
 bg-white rounded-xl border-2 border-black p-5 shadow-[6px_6px_0px_#000]
 ```
 
-**Hover Effect (Default):**
+**Hover Effect:**
 ```css
 transition-all duration-200 hover:-translate-x-[2px] hover:-translate-y-[2px] hover:shadow-[8px_8px_0px_#000]
 ```
 
 **Props:**
-- `hoverable` (default: `true`): Enables hover effect
-- `static`: Disables hover effect even if `hoverable` is true
+- `hoverable` (default: `false`): Enables hover effect - **only use for interactive/clickable cards**
+- `static` (default: `false`): Explicitly disables hover effect
+
+**Usage Guidelines:**
+- **DO use `hoverable={true}`** for:
+  - Clickable/selectable cards (e.g., itinerary cards in grid, persona cards)
+  - Cards that act as buttons or links
+  - Interactive elements that respond to user action
+  
+- **DO NOT use hover effect** (default or `static={true}`) for:
+  - Informational/display cards (e.g., welcome cards, question containers)
+  - Timeline cards
+  - Summary cards
+  - Loading states
+  - Any card that is purely informational
+
+**Example:**
+```tsx
+// Informational card - no hover
+<Card static>
+  <h2>Welcome</h2>
+  <p>Content here</p>
+</Card>
+
+// Interactive card - with hover
+<Card hoverable onClick={handleClick}>
+  <h3>Select Me</h3>
+</Card>
+```
 
 **Padding:**
 - Default: `p-5` (1.25rem / 20px)

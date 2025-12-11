@@ -100,7 +100,7 @@ export default function ItineraryDetailPage() {
         </div>
 
         {/* Timeline */}
-        <Card className="mb-8">
+        <Card static className="mb-8">
           <h2 className="text-2xl font-bold mb-6">Your Itinerary Timeline</h2>
           <div className="space-y-6">
             {itinerary.items.map((item, index) => {
@@ -166,7 +166,7 @@ export default function ItineraryDetailPage() {
         </Card>
 
         {/* Action Buttons */}
-        <Card>
+        <Card static>
           <h2 className="text-2xl font-bold mb-4">Ready to start your adventure?</h2>
           <p className="text-gray-600 mb-6">
             {isAuthenticated

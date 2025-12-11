@@ -64,7 +64,7 @@ function SortableItem({ item, onDelete, isPremium }: SortableItemProps) {
 
   return (
     <div ref={setNodeRef} style={style} className="relative">
-      <Card className="mb-4 hover:shadow-[8px_8px_0px_#000]">
+      <Card hoverable className="mb-4">
         <div className="flex items-center gap-4">
           {/* Drag Handle */}
           <button
@@ -235,7 +235,7 @@ export default function TripPlanningPage() {
           {/* Main Content */}
           <div className="lg:col-span-2">
             {/* Premium Features Bar */}
-            <Card className="mb-6">
+            <Card static className="mb-6">
               <div className="flex items-center justify-between">
                 <h3 className="text-lg font-bold">Premium Features</h3>
                 <Crown className="w-5 h-5 text-yellow-500" />
@@ -268,7 +268,7 @@ export default function TripPlanningPage() {
             </Card>
 
             {/* Itinerary Items */}
-            <Card>
+            <Card static>
               <div className="flex items-center justify-between mb-4">
                 <h2 className="text-2xl font-bold">Your Itinerary</h2>
                 <Button onClick={() => setIsSearchModalOpen(true)}>
@@ -310,7 +310,7 @@ export default function TripPlanningPage() {
           {/* Sidebar */}
           <div className="space-y-6">
             {/* Trip Summary */}
-            <Card>
+            <Card static>
               <h3 className="text-xl font-bold mb-4">Trip Summary</h3>
               <div className="space-y-3">
                 <div className="flex justify-between">
@@ -336,7 +336,7 @@ export default function TripPlanningPage() {
             </Card>
 
             {/* Tips */}
-            <Card>
+            <Card static>
               <h3 className="text-lg font-bold mb-3">💡 Tips</h3>
               <ul className="space-y-2 text-sm text-gray-600">
                 <li>• Drag locations to reorder</li>
@@ -359,7 +359,7 @@ export default function TripPlanningPage() {
       {showPremiumModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
           <div className="absolute inset-0 bg-black/50" onClick={() => setShowPremiumModal(false)} />
-          <Card className="relative max-w-md">
+          <Card static className="relative max-w-md">
             <div className="text-center">
               <Crown className="w-16 h-16 mx-auto mb-4 text-yellow-500" />
               <h2 className="text-3xl font-bold mb-2">Premium Feature</h2>

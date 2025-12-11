@@ -49,7 +49,7 @@ export default function ItinerariesPage() {
   if (isLoading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-[#4FC3F7]/10 via-[#FAFAF8] to-[#81D4FA]/10 flex items-center justify-center">
-        <Card className="text-center p-12">
+        <Card static className="text-center p-12">
           <Loader2 className="w-16 h-16 animate-spin text-[#4FC3F7] mx-auto mb-4" />
           <h2 className="text-2xl font-bold mb-2">Creating Your Perfect Itinerary...</h2>
           <p className="text-gray-600">
@@ -81,7 +81,7 @@ export default function ItinerariesPage() {
         {/* Itineraries Grid */}
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
           {itineraries.map((itinerary, index) => (
-            <Card key={index} className="overflow-hidden">
+            <Card key={index} hoverable className="overflow-hidden" onClick={() => handleSelectItinerary(itinerary)}>
               {/* Images */}
               <div className="grid grid-cols-2 gap-2 mb-4">
                 {itinerary.highlights.slice(0, 4).map((highlight, i) => (

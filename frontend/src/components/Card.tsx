@@ -7,12 +7,13 @@ interface CardProps extends HTMLAttributes<HTMLDivElement> {
 
 export const Card = forwardRef<HTMLDivElement, CardProps>(
   (
-    { className = '', hoverable = true, static: isStatic = false, children, ...props },
+    { className = '', hoverable = false, static: isStatic = false, children, ...props },
     ref
   ) => {
     const baseStyles =
       'bg-white rounded-xl border-2 border-black p-5 shadow-[6px_6px_0px_#000]';
     
+    // Only apply hover effect if explicitly enabled AND not static
     const hoverStyles = hoverable && !isStatic
       ? 'transition-all duration-200 hover:-translate-x-[2px] hover:-translate-y-[2px] hover:shadow-[8px_8px_0px_#000]'
       : '';

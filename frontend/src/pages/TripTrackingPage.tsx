@@ -107,7 +107,7 @@ export default function TripTrackingPage() {
           {/* Main Content */}
           <div className="lg:col-span-2 space-y-6">
             {/* Map Placeholder */}
-            <Card>
+            <Card static>
               <div className="aspect-video bg-gradient-to-br from-[#4FC3F7]/20 to-[#81D4FA]/20 rounded-lg border-2 border-black flex items-center justify-center relative overflow-hidden">
                 <div className="absolute inset-0 grid grid-cols-8 grid-rows-8">
                   {Array.from({ length: 64 }).map((_, i) => (
@@ -125,7 +125,7 @@ export default function TripTrackingPage() {
             </Card>
 
             {/* Current Location */}
-            <Card>
+            <Card static>
               <div className="flex items-center gap-3 mb-4">
                 <div className="w-12 h-12 bg-[#4FC3F7] border-2 border-black rounded-full flex items-center justify-center">
                   <Navigation className="w-6 h-6 text-black" />
@@ -174,7 +174,7 @@ export default function TripTrackingPage() {
             </Card>
 
             {/* Weather Alert */}
-            <Card className="bg-blue-50">
+            <Card static className="bg-blue-50">
               <div className="flex items-start gap-3">
                 <Cloud className="w-6 h-6 text-blue-600 mt-1" />
                 <div className="flex-1">
@@ -190,7 +190,7 @@ export default function TripTrackingPage() {
           {/* Sidebar */}
           <div className="space-y-6">
             {/* Notifications */}
-            <Card>
+            <Card static>
               <h3 className="text-lg font-bold mb-3">📬 Notifications</h3>
               <div className="space-y-2 max-h-64 overflow-y-auto">
                 {notifications.length === 0 ? (
@@ -209,7 +209,7 @@ export default function TripTrackingPage() {
             </Card>
 
             {/* Progress */}
-            <Card>
+            <Card static>
               <h3 className="text-lg font-bold mb-3">Trip Progress</h3>
               <div className="mb-4">
                 <div className="flex justify-between text-sm mb-1">
@@ -250,7 +250,7 @@ export default function TripTrackingPage() {
             </Card>
 
             {/* Smart Routing */}
-            <Card className="bg-yellow-50">
+            <Card static className="bg-yellow-50">
               <div className="flex items-start gap-3">
                 <AlertCircle className="w-6 h-6 text-yellow-600 mt-1" />
                 <div className="flex-1">

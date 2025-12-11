@@ -100,7 +100,7 @@ export default function MyTripsPage() {
             <Loader2 className="w-12 h-12 animate-spin text-[#4FC3F7]" />
           </div>
         ) : itineraries.length === 0 ? (
-          <Card className="text-center py-20">
+          <Card static className="text-center py-20">
             <MapPin className="w-16 h-16 mx-auto mb-4 text-gray-300" />
             <h2 className="text-2xl font-bold mb-2">No trips found</h2>
             <p className="text-gray-600 mb-6">
@@ -115,7 +115,7 @@ export default function MyTripsPage() {
         ) : (
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
             {itineraries.map((itinerary) => (
-              <Card key={itinerary.id}>
+              <Card key={itinerary.id} hoverable>
                 {/* Image Grid */}
                 <div className="grid grid-cols-2 gap-2 mb-4 h-40">
                   {itinerary.items.slice(0, 4).map((item, i) => (

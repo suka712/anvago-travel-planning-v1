@@ -106,7 +106,7 @@ export default function OnboardingPage() {
     switch (step) {
       case 0:
         return (
-          <Card className="text-center max-w-2xl mx-auto">
+          <Card static className="text-center max-w-2xl mx-auto">
             <div className="py-8">
               <h1 className="text-5xl font-bold mb-4">Welcome to Anvago! 🌴</h1>
               <p className="text-xl text-gray-600 mb-8">
@@ -121,7 +121,7 @@ export default function OnboardingPage() {
 
       case 1:
         return (
-          <Card className="max-w-2xl mx-auto">
+          <Card static className="max-w-2xl mx-auto">
             <h2 className="text-3xl font-bold mb-6">Essential Questions</h2>
             <div className="space-y-6">
               <Input
@@ -152,7 +152,7 @@ export default function OnboardingPage() {
       case 2:
         return (
           <div className="max-w-6xl mx-auto">
-            <Card>
+            <Card static>
               <h2 className="text-3xl font-bold mb-2">Which persona describes you?</h2>
               <p className="text-gray-600 mb-6">Select all that apply</p>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
@@ -182,7 +182,7 @@ export default function OnboardingPage() {
       case 3:
         return (
           <div className="max-w-2xl mx-auto">
-            <Card>
+            <Card static>
               <h2 className="text-3xl font-bold mb-2">Swipe through locations!</h2>
               <p className="text-gray-600 mb-6">Swipe right if you like it, left to pass</p>
               
@@ -212,7 +212,7 @@ export default function OnboardingPage() {
       case 4:
         return (
           <div className="max-w-6xl mx-auto">
-            <Card>
+            <Card static>
               <h2 className="text-3xl font-bold mb-2">What do you have in mind?</h2>
               <p className="text-gray-600 mb-6">Select your interests</p>
               <EmojiSelector
@@ -235,7 +235,7 @@ export default function OnboardingPage() {
       case 5:
         return (
           <div className="max-w-4xl mx-auto">
-            <Card>
+            <Card static>
               <h2 className="text-3xl font-bold mb-6">Danang Weather</h2>
               {weather ? (
                 <div className="space-y-6">
