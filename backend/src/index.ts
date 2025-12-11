@@ -17,8 +17,9 @@ app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', message: 'Anvago API is running' });
 });
 
-// Routes will be added here
-// app.use('/api/auth', authRoutes);
+// Routes
+import authRoutes from './routes/authRoutes';
+app.use('/api/auth', authRoutes);
 // app.use('/api/onboarding', onboardingRoutes);
 // app.use('/api/itineraries', itineraryRoutes);
 // app.use('/api/locations', locationRoutes);
